@@ -1,0 +1,33 @@
+name: new-project
+
+services:
+  web:
+    build:
+      context: .
+    container_name: hub_web
+    restart: always
+    ports:
+      - "8081:80"
+      - "5173:5173"  # Porta per Vite.js
+    volumes:
+      - ./vhost.conf:/etc/httpd/conf.d/vhost.conf:ro
+      - .:/var/www/html:delegated
+      - /var/www/html/vendor
+    depends_on:
+      - db
+  db:
+    image: mysql:8.0.44-debian
+    container_name: mio-mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: mio_database
+      MYSQL_USER: daniele
+      MYSQL_PASSWORD: daniele15
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
