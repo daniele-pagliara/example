@@ -38,8 +38,20 @@ const props = defineProps({
           <input type="hidden" name="_token" :value="csrfToken" />
           <FieldGroup>
             <Field>
-              <FieldLabel for="name"> Nome completo </FieldLabel>
-              <Input id="name" type="text" name="name" placeholder="John Doe" required />
+              <FieldLabel for="name"> Nome </FieldLabel>
+              <Input id="name" type="text" name="name" placeholder="John" required />
+            </Field>
+            <Field>
+              <FieldLabel for="surname"> Cognome </FieldLabel>
+              <Input id="surname" type="text" name="surname" placeholder="Doe" required />
+            </Field>
+            <Field>
+              <FieldLabel for="cf"> Codice Fiscale </FieldLabel>
+              <Input id="cf" type="text" name="cf" placeholder="CF1234567890123456" maxlength="16" required />
+            </Field>
+            <Field>
+              <FieldLabel for="address"> Indirizzo </FieldLabel>
+              <Input id="address" type="text" name="address" placeholder="Via Roma, 123"/>
             </Field>
             <Field>
               <FieldLabel for="email"> Email </FieldLabel>
@@ -50,6 +62,10 @@ const props = defineProps({
                 placeholder="m@example.com"
                 required
               />
+            </Field>
+            <Field>
+              <FieldLabel for="phone"> Telefono </FieldLabel>
+              <Input id="phone" type="text" name="phone" placeholder="+39 123 456 7890" maxlength="20"/>
             </Field>
             <Field>
               <Field class="grid grid-cols-2 gap-4">

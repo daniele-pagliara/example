@@ -21,7 +21,21 @@ const props = defineProps<{
     email: string
     avatar?: string
   }
-  data: any[]
+  users: Array<{
+    id: number
+    header: string
+    type: string
+    status: string
+    target: string
+    limit: string
+    reviewer: string
+    first_name: string
+  last_name: string
+  email: string
+  address: string
+  phone: string
+  }>
+  // data: any[]
   // accountData: {
   //   email: string
   //   name: string
@@ -332,7 +346,7 @@ const user = {
             <div class="px-4 lg:px-6">
               <!-- <ChartAreaInteractive /> -->
             </div>
-            <DataTable :data="props.data" />
+            <DataTable :data="props.users" :csrf-token="csrfToken" />
           </div>
         </div>
       </div>

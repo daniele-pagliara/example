@@ -1,7 +1,7 @@
 @extends('auth.master-user')
 @section('content-user')
     <sidebar-provider>
-        <tab-utenti
+        <update-form
             dashboard-url="{{ route('pagine.home') }}" 
             database-url="{{ route('pagine.cerca-dati') }}"
             home-url="{{ url('/') }}"
@@ -10,6 +10,6 @@
             :user-data="{{ Auth::user() }}"
             :users="{{ $usersForVue->toJson() }}"
             >
-        </tab-utenti>
+        </update-form>
     </sidebar-provider>
 @endsection

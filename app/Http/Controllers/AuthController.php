@@ -68,14 +68,22 @@ class AuthController extends Controller
     {
         $dati = $request->validate([
             'name' => 'required|string|max:255',
+            'surname' => 'required|string|max:255',
+            'cf' => 'required|string|size:16|unique:users,cf',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
+            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20|unique:users,phone',
         ]);
 
         $utente = User::create([
             'name' => $dati['name'],
+            'surname' => $dati['surname'],
+            'cf' => $dati['cf'],
             'email' => $dati['email'],
             'password' => Hash::make($dati['password']),
+            'address' => $dati['address'] ?? null,
+            'phone' => $dati['phone'] ?? null,
         ]);
 
         Auth::login($utente);

@@ -16,6 +16,7 @@ import { SidebarProvider } from './components/ui/sidebar';
 import ChartAreaInteractive from './components/ChartAreaInteractive.vue';
 import DashboardUser from './components/Home.vue';
 import TabUtenti from './components/Dashboard.vue';
+import UpdateForm from './components/signup-01/components/SignupForm.vue';
 
 // Inizializza l'app Vue
 const app = createApp({});
@@ -34,6 +35,7 @@ app.component('app-sidebar', AppSidebar);                       // SIDEBAR
 app.component('chart-area-interactive', ChartAreaInteractive);  // GRAFICO INTERATTIVO
 app.component('dashboard-user', DashboardUser);                 // DASHBOARD UTENTE
 app.component('tab-utenti', TabUtenti);                         // TABELLA UTENTI
+app.component('update-form', UpdateForm);                       // PAGINA MODIFICA DATI
 
 // Monta l'app sull'ID #app che deve essere presente nel tuo master-guest.blade.php
 app.mount('#app');

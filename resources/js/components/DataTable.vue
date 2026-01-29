@@ -16,6 +16,7 @@ export const schema = z.object({
 </script>
 
 <script setup lang="ts">
+import axios from 'axios'
 import { Badge } from '@/components/ui/badge'
 import { RestrictToVerticalAxis } from "@dnd-kit/abstract/modifiers"
 import {
@@ -81,18 +82,86 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs'
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+
 const props = defineProps<{
   data: TableData[]
+  csrfToken: string
 }>()
 
 interface TableData {
   id: number
   header: string
+  reviewer: string
+  first_name: string // Aggiunto
+  last_name: string  // Aggiunto
+  email: string      // Aggiunto
+  address?: string    // Aggiunto
+  phone?: string      // Aggiunto
   type: string
   status: string
   target: string
   limit: string
-  reviewer: string
+}
+
+const deleteUser = async (id: number) => {
+  // if (!confirm("Spostare l'utente nel cestino?")) return;
+  
+  try {
+    await axios.delete(`/users/${id}`, {
+      headers: { 'X-CSRF-TOKEN': props.csrfToken }
+    });
+    alert("Utente eliminato con successo.");
+    window.location.reload(); // Semplice e veloce per ora
+  } catch (e) {
+    console.error(e);
+    alert("Errore nell'eliminazione");
+  }
+}
+
+const isEditModalOpen = ref(false)
+const userToEdit = ref<TableData | null>(null)
+const isLoading = ref(false)
+
+// Modifichiamo la funzione editUser per aprire la modale invece di reindirizzare
+const editUser = (user: TableData) => {
+  // Creiamo una copia per non modificare la tabella prima del salvataggio
+  userToEdit.value = { ...user } 
+  isEditModalOpen.value = true
+}
+
+// Funzione per salvare le modifiche via API
+const handleUpdate = async () => {
+  if (!userToEdit.value) return
+  
+  isLoading.value = true
+  try {
+    await axios.put(`/users/${userToEdit.value.id}`, {
+      name: userToEdit.value.first_name,
+      surname: userToEdit.value.last_name,
+      email: userToEdit.value.email,
+      address: userToEdit.value.address,
+      phone: userToEdit.value.phone,
+    }, {
+      headers: { 'X-CSRF-TOKEN': props.csrfToken }
+    })
+    
+    isEditModalOpen.value = false
+    window.location.reload() // Ricarica per vedere i dati aggiornati in tabella
+  } catch (error) {
+    console.error(error)
+    alert("Errore durante l'aggiornamento dei dati.")
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const sorting = ref<SortingState>([])
@@ -128,55 +197,15 @@ const columns: ColumnDef<TableData>[] = [
     cell: ({ row }) => h("div", String(row.getValue("header"))),
     enableHiding: false,
   },
-  // {
-  //   accessorKey: "type",
-  //   header: "Section Type",
-  //   cell: ({ row }) => h(Badge, {
-  //     variant: "outline",
-  //   }, () => String(row.getValue("type"))),
-  // },
-  // {
-  //   accessorKey: "status",
-  //   header: "Status",
-  //   cell: ({ row }) => {
-  //     const status = row.getValue("status") as string
-  //     return h("div", { class: "flex items-center gap-2" }, [
-  //       status === "Done"
-  //         ? h(IconCircleCheckFilled, { class: "h-4 w-4 text-emerald-500" })
-  //         : h(IconLoader, { class: "h-4 w-4 animate-spin text-muted-foreground" }),
-  //       h("span", {}, status),
-  //     ])
-  //   },
-  // },
-  // {
-  //   accessorKey: "target",
-  //   header: () => h("div", { class: "flex items-center gap-1" }, [
-  //     "Target",
-  //   ]),
-  //   cell: ({ row }) => h(Button, {
-  //     variant: "ghost",
-  //     size: "sm",
-  //     class: "h-auto p-1 text-xs font-mono",
-  //   }, () => [
-  //     h("span", { class: "ml-1 font-semibold" }, String(row.getValue("target"))),
-  //   ]),
-  // },
-  // {
-  //   accessorKey: "limit",
-  //   header: () => h("div", { class: "flex items-center gap-1" }, [
-  //     "Limit",
-  //   ]),
-  //   cell: ({ row }) => h(Button, {
-  //     variant: "ghost",
-  //     size: "sm",
-  //     class: "h-auto p-1 text-xs font-mono",
-  //   }, () => [
-  //     h("span", { class: "ml-1 font-semibold" }, String(row.getValue("limit"))),
-  //   ]),
-  // },
+  {
+    accessorKey: "type",
+    header: "Codice Fiscale",
+    cell: ({ row }) => h("div", String(row.getValue("type"))),
+    enableHiding: false,
+  },
   {
     accessorKey: "reviewer",
-    header: "Nome",
+    header: "Nome completo",
     cell: ({ row }) => {
       const reviewer = row.getValue("reviewer") as string
       const isAssigned = reviewer !== "Assign reviewer"
@@ -200,33 +229,74 @@ const columns: ColumnDef<TableData>[] = [
       })
     },
   },
+  {
+    accessorKey: "status",
+    header: "Indirizzo",
+    cell: ({ row }) => h("div", String(row.getValue("status"))),
+    enableHiding: false,
+  },
+  {
+    accessorKey: "target",
+    header: "Telefono",
+    cell: ({ row }) => h("div", String(row.getValue("target"))),
+    enableHiding: false,
+  },
   // {
-  //   id: "actions",
-  //   cell: () => h(DropdownMenu, {}, {
-  //     default: () => [
-  //       h(DropdownMenuTrigger, { asChild: true }, {
-  //         default: () => h(Button, {
-  //           variant: "ghost",
-  //           class: "h-8 w-8 p-0",
-  //         }, {
-  //           default: () => [
-  //             h("span", { class: "sr-only" }, "Open menu"),
-  //             h(IconDotsVertical, { class: "h-4 w-4" }),
-  //           ],
-  //         }),
-  //       }),
-  //       h(DropdownMenuContent, { align: "end" }, {
-  //         default: () => [
-  //           h(DropdownMenuItem, {}, () => "Edit"),
-  //           h(DropdownMenuItem, {}, () => "Make a copy"),
-  //           h(DropdownMenuItem, {}, () => "Favorite"),
-  //           h(DropdownMenuSeparator, {}),
-  //           h(DropdownMenuItem, {}, () => "Delete"),
-  //         ],
-  //       }),
-  //     ],
-  //   }),
+  //   accessorKey: "limit",
+  //   header: () => h("div", { class: "flex items-center gap-1" }, [
+  //     "Limit",
+  //   ]),
+  //   cell: ({ row }) => h(Button, {
+  //     variant: "ghost",
+  //     size: "sm",
+  //     class: "h-auto p-1 text-xs font-mono",
+  //   }, () => [
+  //     h("span", { class: "ml-1 font-semibold" }, String(row.getValue("limit"))),
+  //   ]),
   // },
+  {
+  id: "actions",
+  cell: ({ row }) => {
+    const userId = row.original.id
+
+    return h(DropdownMenu, {}, {
+      default: () => [
+        h(DropdownMenuTrigger, { asChild: true }, {
+          default: () => h(Button, {
+            variant: "ghost",
+            class: "h-8 w-8 p-0",
+          }, {
+            default: () => [
+              h("span", { class: "sr-only" }, "Open menu"),
+              h(IconDotsVertical, { class: "h-4 w-4" }),
+            ],
+          }),
+        }),
+        h(DropdownMenuContent, { align: "end" }, {
+          default: () => [
+            h(DropdownMenuItem, {
+              onClick: () => editUser(row.original) // Funzione per la modifica
+            }, () => "Modifica"),
+            
+            // h(DropdownMenuItem, {}, () => "Make a copy"),
+            // h(DropdownMenuItem, {}, () => "Favorite"),
+            
+            h(DropdownMenuSeparator, {}),
+            
+            h(DropdownMenuItem, {
+              class: "text-red-600 focus:text-red-600",
+              onClick: () => {
+                if (confirm("Sei sicuro di voler eliminare questo utente?")) {
+                  deleteUser(userId)
+                }
+              }
+            }, () => "Elimina"),
+          ],
+        }),
+      ],
+    })
+  },
+},
 ]
 
 const table = useVueTable({
@@ -376,6 +446,56 @@ const table = useVueTable({
               </TableRow>
             </TableBody>
           </Table>
+          
+          
+          <Dialog :open="isEditModalOpen" @update:open="isEditModalOpen = $event">
+  <DialogContent class="sm:max-w-[500px]">
+    <DialogHeader>
+      <DialogTitle>Modifica Profilo Utente</DialogTitle>
+      <DialogDescription>
+        Modifica le informazioni personali dell'utente. Clicca su salva per confermare.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div v-if="userToEdit" class="grid gap-4 py-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="grid gap-2">
+          <Label for="name">Nome</Label>
+          <Input id="name" v-model="userToEdit.first_name" />
+        </div>
+        <div class="grid gap-2">
+          <Label for="surname">Cognome</Label>
+          <Input id="surname" v-model="userToEdit.last_name" />
+        </div>
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="email">Email</Label>
+        <Input id="email" type="email" v-model="userToEdit.email" />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="phone">Telefono</Label>
+        <Input id="phone" v-model="userToEdit.phone" placeholder="+39..." />
+      </div>
+
+      <div class="grid gap-2">
+        <Label for="address">Indirizzo</Label>
+        <Input id="address" v-model="userToEdit.address" />
+      </div>
+    </div>
+
+    <DialogFooter>
+      <Button variant="outline" @click="isEditModalOpen = false">Annulla</Button>
+      <Button :disabled="isLoading" @click="handleUpdate">
+        <IconLoader v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />
+        Salva modifiche
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
         </DragDropProvider>
         <DndContext
             collisionDetection={closestCenter}
