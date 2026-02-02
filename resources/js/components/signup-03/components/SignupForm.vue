@@ -1,5 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { cn } from '@/lib/utils';
+import { ref, h } from 'vue'
 import { Button } from '@/components/ui/button';
 import {
   Card,

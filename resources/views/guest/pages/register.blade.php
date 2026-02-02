@@ -14,6 +14,7 @@
             register-post-url="{{ route('registrati.post') }}" 
             csrf-token="{{ csrf_token() }}"
             login-post-url="{{ route('login') }}"
+            :initial-errors="{{ json_encode($errors->getMessages()) }}"
         >
         </signup-page>
     </div>

@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 
 class AccountController extends Controller
 {
-    public function index() {
+    public function index() 
+    {
         $accounts = Account::all();
 
         $accountsForVue = $accounts->map(function ($account) {
@@ -25,11 +26,13 @@ class AccountController extends Controller
         return view('auth.pages.cerca-dati', compact('accountsForVue'));
     }
 
-    public function create() {
+    public function create() 
+    {
         return view('pagine.invia-dati');
     }
 
-    public function store(Request $request) {
+    public function store(Request $request) 
+    {
         
         $validati = $request->validate([
             'nome' => 'required|string|max:255',
@@ -41,14 +44,16 @@ class AccountController extends Controller
         return redirect()->route('pagine.home')->with('successo', 'Dati salvati!');
     }
 
-    public function edit($id) {
+    public function edit($id) 
+    {
         
         $account = Account::findOrFail($id);
         
         return view('pagine.modifica-dati', compact('account'));
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id) 
+    {
         
         $account = Account::findOrFail($id);
         
@@ -62,7 +67,8 @@ class AccountController extends Controller
         return redirect()->route('pagine.cerca-dati')->with('successo', 'Aggiornato!');
     }
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         
         $account = Account::findOrFail($id);
         

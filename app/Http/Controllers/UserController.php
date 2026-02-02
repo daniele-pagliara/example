@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -37,30 +39,15 @@ class UserController extends Controller
         return view('auth.pages.cerca-dati', compact('usersForVue'));
     }
 
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'surname' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
-            'type' => 'nullable|string|max:16',
-            'address' => 'nullable|string|max:500',
-            'phone' => 'nullable|string|max:20',
-        ]);
+        $validated = $request->validated();
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'surname' => $validated['surname'] ?? '',
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'cf' => $validated['type'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'phone' => $validated['phone'] ?? null,
-            'disabled' => false,
-        ]);
+        $validated['password'] = bcrypt($validated['password']);
 
-        return response()->json(['success' => true, 'user' => $user], 201);
+        User::create($validated);
+
+        return response()->json(['success' => true, 'message' => 'Utente creato con successo!'], 201);
     }
 
     public function show($id)
@@ -69,18 +56,17 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'nullable|min:8|confirmed',
-            'address' => 'nullable|string|max:500',
-            'phone' => 'nullable|string|max:20',
-        ]);
+        $validated = $request->validated();
+
+        if(!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
 
         $user->update($validated);
 

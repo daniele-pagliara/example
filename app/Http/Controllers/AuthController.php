@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use App\Http\Requests\RegisterUserRequest;
 
 class AuthController extends Controller
 {
@@ -71,29 +72,17 @@ class AuthController extends Controller
         return view('guest.pages.register');
     }
 
-    public function registrati(Request $request)
+    public function registrati(RegisterUserRequest $request)
     {
-        $dati = $request->validate([
-            'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'cf' => 'required|string|size:16|unique:users,cf',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20|unique:users,phone',
-        ]);
+        $validated = $request->validated();
 
-        $utente = User::create([
-            'name' => $dati['name'],
-            'surname' => $dati['surname'],
-            'cf' => $dati['cf'],
-            'email' => $dati['email'],
-            'password' => Hash::make($dati['password']),
-            'address' => $dati['address'] ?? null,
-            'phone' => $dati['phone'] ?? null,
-        ]);
+        $validated['password'] = bcrypt($validated['password']);
 
-        Auth::login($utente);
+        $user = User::create($validated);
+
+        Auth::login($user);
+        
+        //$request->session()->regenerate();
 
         return redirect()->route('pagine.home');
     }

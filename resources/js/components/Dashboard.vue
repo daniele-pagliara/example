@@ -17,6 +17,7 @@ const props = defineProps<{
   logoutUrl: string
   csrfToken: string
   userData: {
+    id:number
     name: string
     email: string
     avatar?: string
@@ -340,7 +341,7 @@ const user = {
             <div class="px-4 lg:px-6">
               <!-- <ChartAreaInteractive /> -->
             </div>
-            <DataTable :data="props.users" :csrf-token="csrfToken" />
+            <DataTable :data="props.users" :csrf-token="csrfToken" :current-user-id="props.userData.id" />
           </div>
         </div>
       </div>

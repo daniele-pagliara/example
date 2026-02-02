@@ -118,7 +118,7 @@ import {
 const props = defineProps<{
   data: TableData[]
   csrfToken: string
-
+  currentUserId?: number
 }>()
 
 interface TableData {
@@ -291,6 +291,7 @@ const handleUpdate = async () => {
     await axios.put(`/users/${userToEdit.value.id}`, {
       name: userToEdit.value.first_name,
       surname: userToEdit.value.last_name,
+      cf: userToEdit.value.type,
       email: userToEdit.value.email,
       password: userToEdit.value.password,
       password_confirmation: userToEdit.value.password_confirmation,
@@ -329,7 +330,7 @@ const handleCreate = async () => {
       email: newUser.value.email,
       password: newUser.value.password,
       password_confirmation: newUser.value.password_confirmation,
-      type: newUser.value.type,
+      cf: newUser.value.type,
       address: newUser.value.address,
       phone: newUser.value.phone,
     }, {
@@ -352,8 +353,7 @@ const columnFilters = ref<ColumnFiltersState>([])
 const columnVisibility = ref<VisibilityState>({})
 const rowSelection = ref({})
 
-const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-const currentUserId = currentUser ? Number(currentUser.id) : null;
+const currentUserId = props.currentUserId || null;
 
 const columns: ColumnDef<TableData>[] = [
   // {
@@ -367,7 +367,7 @@ const columns: ColumnDef<TableData>[] = [
     header: "Stato",
     cell: ({ row }) => {
       const status = row.getValue("status") as string
-      return h("div", { class: "flex items-center gap-2" }, [
+      return h("div", { class: "flex items-center gap-2 px-2" }, [
         status === "Attivo"
           ? h(IconCircleFilled, { class: "h-4 w-4 text-emerald-500" })
           : h(IconCircleFilled, { class: "h-4 w-4 text-yellow-500" }),
@@ -470,14 +470,14 @@ const columns: ColumnDef<TableData>[] = [
               h(DropdownMenuSeparator, {}),
 
               h(DropdownMenuItem, {
-                class: "text-red-600 focus:text-red-600",
-                disabled: row.getValue("id") === currentUserId,
+                class: row.original.id === currentUserId 
+                  ? "text-gray-400 opacity-50 cursor-not-allowed focus:text-gray-400"
+                  : "text-red-600 focus:text-red-600",
                 onClick: () => {
-                  if (row.getValue("id") !== currentUserId) {
-                    confirmAction(row.original, 'delete')
-                  } else {
-                    showAlert("Errore", "Non puoi eliminare te stesso!", "destructive")
+                  if (row.original.id === currentUserId) {
+                    return
                   }
+                  confirmAction(row.original, 'delete')
                 }
               }, () => "Elimina"),
             ],
@@ -675,7 +675,7 @@ const table = useVueTable({
 
                 <div class="grid gap-2">
                   <Label for="new-password">Password *</Label>
-                  <Input id="new-password" type="password" name="password" v-model="newUser.password" />
+                  <Input id="new-password" type="password" name="new-password" v-model="newUser.password" />
                 </div>
 
                 <div class="grid gap-2">
